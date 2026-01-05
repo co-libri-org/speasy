@@ -51,7 +51,8 @@ extensions = [
     'sphinx_codeautolink',
     'sphinxcontrib.apidoc',
     'nbsphinx',
-    'numpydoc']
+    'numpydoc',
+    'sphinx.ext.imgconverter']
 
 apidoc_module_dir = '../speasy'
 apidoc_output_dir = 'dev'
@@ -65,7 +66,7 @@ codeautolink_custom_blocks = {
 }
 
 nbsphinx_execute_arguments = [
-    "--InlineBackend.figure_formats={'svg', 'pdf'}",
+    "--InlineBackend.figure_formats={'pdf'}",
     "--InlineBackend.rc=figure.dpi=96",
 ]
 
