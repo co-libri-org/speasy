@@ -18,6 +18,12 @@ from speasy.config import core as core_config
 from .url_utils import host_and_port, ApplyRewriteRules
 from .platform import is_running_on_wasm
 
+import warnings
+from urllib3.exceptions import InsecureRequestWarning
+
+warnings.simplefilter("ignore", InsecureRequestWarning)
+
+
 log = logging.getLogger(__name__)
 
 USER_AGENT = core_config.http_user_agent.get() or f'Speasy/{__version__} {platform.uname()} (SciQLop project)'
@@ -39,7 +45,7 @@ def _connection_manager_builder():
     kwargs = {
         'num_pools': core_config.urlib_num_pools.get(),
         'maxsize': core_config.urlib_pool_size.get(),
-        'cert_reqs': 'CERT_REQUIRED',
+        'cert_reqs': 'CERT_NONE',
         'ca_certs': certifi.where()
     }
     if os.environ.get("HTTP_PROXY", None) is not None:
