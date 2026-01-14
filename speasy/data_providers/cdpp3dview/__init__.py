@@ -22,21 +22,6 @@ from ...core.http import urlopen
 log = logging.getLogger(__name__)
 
 
-def parse_trajectory_json(json_data: str) -> Tuple[np.ndarray, np.ndarray]:
-    data = json.loads(json_data)
-
-    entries = data['values']
-
-    time_axis = np.array([np.datetime64(entry['time'][:-1], 'ns')
-                          for entry in entries])
-
-    positions = np.array([entry['position'] for entry in entries])
-    speeds = np.array([entry['speed'] for entry in entries])
-    values = np.concatenate([positions, speeds], axis=1)
-
-    return time_axis, values
-
-
 class Cdpp3dViewWebservice(DataProvider):
     """Cdpp3dViewWebservice Class
 
