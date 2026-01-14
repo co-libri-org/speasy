@@ -99,7 +99,8 @@ class Cdpp3dViewWebservice(DataProvider):
 
     def __init__(self):
         DataProvider.__init__(
-            self, provider_name="cdpp3dview", provider_alt_names=["cdpp3d"]
+            self, provider_name="cdpp3dview", provider_alt_names=["cdpp3d"],
+            inventory_disable_proxy=True
         )
 
     def get_data(self, body: str, frame: str, start: str, stop: str,
