@@ -18,7 +18,6 @@ from speasy.core.proxy import PROXY_ALLOWED_KWARGS
 from speasy.core.typing import AnyDateTimeType
 
 from ...core.http import urlopen
-
 from ._coordinate_frames import _COORDINATE_FRAMES
 
 log = logging.getLogger(__name__)
@@ -42,8 +41,10 @@ class Cdpp3dViewWebservice(DataProvider):
 
     def __init__(self):
         DataProvider.__init__(
-            self, provider_name="cdpp3dview", provider_alt_names=["cdpp3d"],
-            inventory_disable_proxy=True
+            self,
+            provider_name="cdpp3dview",
+            provider_alt_names=["cdpp3d"],
+            inventory_disable_proxy=True,
         )
 
     # TODO: move to _inventory_builder.build_inventory
@@ -104,20 +105,36 @@ class Cdpp3dViewWebservice(DataProvider):
     # TODO: add decorators
     # @UnversionedProviderCache(prefix="cdpp3dview", fragment_hours=24)
     # @Proxyfiable(GetProduct, get_parameter_args_ws)
-    @AllowedKwargs(PROXY_ALLOWED_KWARGS + CACHE_ALLOWED_KWARGS +
-                   GET_DATA_ALLOWED_KWARGS + ['sampling', 'format'])
+    @AllowedKwargs(
+        PROXY_ALLOWED_KWARGS
+        + CACHE_ALLOWED_KWARGS
+        + GET_DATA_ALLOWED_KWARGS
+        + ["sampling", "format"]
+    )
     # @EnsureUTCDateTime()
     # @ParameterRangeCheck()
     # TODO: change signature
-    def get_data(self, product: str,
-                 start_time: AnyDateTimeType,
-                 stop_time: AnyDateTimeType,
-                 **kwargs) -> Optional[SpeasyVariable]:
+    def get_data(
+        self,
+        product: str,
+        start_time: AnyDateTimeType,
+        stop_time: AnyDateTimeType,
+        coordinate_frame: str = "J2000",
+        **kwargs,
+    ) -> Optional[SpeasyVariable]:
+        if coordinate_frame not in self._get_frames():
+            raise ValueError(
+                f"Coordinate frame '{coordinate_frame}' is not available. "
+                f"Available frames are: {self._get_frames()}"
+            )
 
-        var = self._get_trajectory(product=product,
-                                   start=start_time,
-                                   stop=stop_time,
-                                   **kwargs)
+        var = self._get_trajectory(
+            product=product,
+            start=start_time,
+            stop=stop_time,
+            coordinate_frame=coordinate_frame,
+            **kwargs,
+        )
         return var
 
     def version(self, product):
@@ -138,21 +155,23 @@ class Cdpp3dViewWebservice(DataProvider):
     # TODO: write accordingly to 3dview REST api
     #       get cdf format
     #       build  and return SpeasyVariable ?
-    def _get_trajectory(self, product: str,
-                        start: AnyDateTimeType,
-                        stop: AnyDateTimeType,
-                        sampling=3600,
-                        format="csv") -> Optional[SpeasyVariable]:
-        product = self._to_parameter_index(product)
+    def _get_trajectory(
+        self,
+        product: str,
+        start: AnyDateTimeType,
+        stop: AnyDateTimeType,
+        coordinate_frame,
+        sampling,
+        format,
+    ):
+        body = self._to_parameter_index(product).spz_name()
 
-        #
-        # how to extract body name and frame name from product ?
-
-        # URL = (
-        #     f"{self.BASE_URL}/get_trajectory"
-        #     f"body={body}&frame={frame}&start={start}&stop={stop}"
-        #     f"&sampling={sampling}&format={format}"
-        # )
+        URL = (
+            f"{self.BASE_URL}/get_trajectory?"
+            f"body={body}&frame={coordinate_frame}&start={start}&stop={stop}"
+            f"&sampling={sampling}&format={format}"
+        )
+        print(URL)
 
         # Do wahaterver with cdflib to return a SpeasyVariable
         # return var
