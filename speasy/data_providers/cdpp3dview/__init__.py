@@ -7,12 +7,11 @@ __email__ = "hitier.richard@gmail.com"
 __version__ = "0.1.0"
 
 import logging
-from typing import Optional
+from typing import Dict, Optional
 
 from speasy import SpeasyVariable
 from speasy.core.algorithms import AllowedKwargs
 from speasy.core.cache._providers_caches import CACHE_ALLOWED_KWARGS
-from speasy.core.data_containers import DataContainer, VariableTimeAxis
 from speasy.core.dataprovider import GET_DATA_ALLOWED_KWARGS, DataProvider
 from speasy.core.inventory.indexes import ParameterIndex, SpeasyIndex
 from speasy.core.proxy import PROXY_ALLOWED_KWARGS
@@ -103,7 +102,8 @@ class Cdpp3dViewWebservice(DataProvider):
     # TODO: add decorators
     # @UnversionedProviderCache(prefix="cdpp3dview", fragment_hours=24)
     # @Proxyfiable(GetProduct, get_parameter_args_ws)
-    @AllowedKwargs(PROXY_ALLOWED_KWARGS + CACHE_ALLOWED_KWARGS + GET_DATA_ALLOWED_KWARGS + ['sampling', 'format'])
+    @AllowedKwargs(PROXY_ALLOWED_KWARGS + CACHE_ALLOWED_KWARGS +
+                   GET_DATA_ALLOWED_KWARGS + ['sampling', 'format'])
     # @EnsureUTCDateTime()
     # @ParameterRangeCheck()
     # TODO: change signature
@@ -144,17 +144,18 @@ class Cdpp3dViewWebservice(DataProvider):
                         start: AnyDateTimeType,
                         stop: AnyDateTimeType,
                         sampling=3600,
-                        format="csv"):
+                        format="csv") -> Optional[SpeasyVariable]:
         product = self._to_parameter_index(product)
 
-        # 
+        #
         # how to extract body name and frame name from product ?
 
-        URL = (
-            f"{self.BASE_URL}/get_trajectory"
-            f"body={body}&frame={frame}&start={start}&stop={stop}"
-            f"&sampling={sampling}&format={format}"
-        )
+        # URL = (
+        #     f"{self.BASE_URL}/get_trajectory"
+        #     f"body={body}&frame={frame}&start={start}&stop={stop}"
+        #     f"&sampling={sampling}&format={format}"
+        # )
 
         # Do wahaterver with cdflib to return a SpeasyVariable
-        return var
+        # return var
+        return None
