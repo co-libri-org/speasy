@@ -12,6 +12,7 @@ from typing import Dict, Optional
 from speasy import SpeasyVariable
 from speasy.core.algorithms import AllowedKwargs
 from speasy.core.cache._providers_caches import CACHE_ALLOWED_KWARGS
+from speasy.core.codecs.codecs_registry import get_codec
 from speasy.core.dataprovider import GET_DATA_ALLOWED_KWARGS, DataProvider
 from speasy.core.inventory.indexes import ParameterIndex, SpeasyIndex
 from speasy.core.proxy import PROXY_ALLOWED_KWARGS
@@ -40,6 +41,7 @@ class Cdpp3dViewWebservice(DataProvider):
     BASE_URL = "https://3dview.irap.omp.eu/webresources"
 
     def __init__(self):
+        self._cdf_codec = get_codec('application/x-cdf')
         DataProvider.__init__(
             self,
             provider_name="cdpp3dview",
@@ -47,7 +49,7 @@ class Cdpp3dViewWebservice(DataProvider):
             inventory_disable_proxy=True,
         )
 
-    # TODO: move to _inventory_builder.build_inventory
+    # TODO: move to _inventory_builder.build_inventory and call it
     def build_inventory(self, root: SpeasyIndex):
         from speasy.core import fix_name
         from speasy.core.inventory.indexes import make_inventory_node
@@ -149,20 +151,17 @@ class Cdpp3dViewWebservice(DataProvider):
         return data["bodies"]
 
     def _get_frames(self):
-        frames = [f.name for f in _COORDINATE_FRAMES]
+        frames = [f["name"] for f in _COORDINATE_FRAMES]
         return frames
 
-    # TODO: write accordingly to 3dview REST api
-    #       get cdf format
-    #       build  and return SpeasyVariable ?
     def _get_trajectory(
         self,
         product: str,
         start: AnyDateTimeType,
         stop: AnyDateTimeType,
-        coordinate_frame,
-        sampling,
-        format,
+        coordinate_frame: str,
+        sampling="600",
+        format="cdf",
     ):
         body = self._to_parameter_index(product).spz_name()
 
@@ -172,7 +171,7 @@ class Cdpp3dViewWebservice(DataProvider):
             f"&sampling={sampling}&format={format}"
         )
         print(URL)
+        # TODO: saniticheck returns None
+        var = self._cdf_codec.load_variables(variables=['pos'], file=URL)
 
-        # Do wahaterver with cdflib to return a SpeasyVariable
-        # return var
-        return None
+        return var['pos']
